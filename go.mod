@@ -1,4 +1,4 @@
-module kwerie/bt-cli
+module kwerie/bt
 
 go 1.25.1
 

@@ -3,20 +3,22 @@ package main
 import (
 	"bytes"
 	"fmt"
-	"github.com/AlecAivazis/survey/v2"
-	"github.com/spf13/cobra"
 	"os"
 	"os/exec"
 	"regexp"
 	"strings"
+
+	"github.com/AlecAivazis/survey/v2"
+	"github.com/spf13/cobra"
 )
 
-var deviceRegex = `((?:[0-9A-Fa-f]{2}[:-]){5}(?:[0-9A-Fa-f]{2}))\s(\S.*)`
+const deviceRegex string = `((?:[0-9A-Fa-f]{2}[:-]){5}(?:[0-9A-Fa-f]{2}))\s(\S.*)`
 
 var connectCommand = &cobra.Command{
 	Use:                "connect",
 	Short:              "Shows a menu of available bluetooth devices to connect to",
 	DisableFlagParsing: true,
+	Aliases:            []string{"connect", "con", "c"},
 	Run: func(cmd *cobra.Command, args []string) {
 		connectedDevices := exec.Command("bluetoothctl", "devices", "Connected")
 		var connectedDevicesOut bytes.Buffer
@@ -80,10 +82,14 @@ var connectCommand = &cobra.Command{
 			if len(matches) < 2 {
 				return
 			}
-			var macAddress = matches[1]
-			//var name = matches[2]
+			var macAddress string = matches[1]
+			var name string = matches[2]
 
-			//fmt.Printf("Connecting to %s \n", name)
+			if len(name) == 0 {
+				name = macAddress
+			}
+
+			fmt.Printf("Connecting to %s \n", name)
 
 			exec.Command("bluetoothctl", "connect", macAddress).Run()
 		}
@@ -93,6 +99,7 @@ var connectCommand = &cobra.Command{
 var disconnectCommand = &cobra.Command{
 	Use:                "disconnect",
 	Short:              "Shows a menu of available bluetooth devices to disconnect from",
+	Aliases:            []string{"disconnect", "dis", "d"},
 	DisableFlagParsing: true,
 	Run: func(cmd *cobra.Command, args []string) {
 		devices := exec.Command("bluetoothctl", "devices", "Connected")
@@ -133,9 +140,9 @@ var disconnectCommand = &cobra.Command{
 				return
 			}
 			var macAddress = matches[1]
-			//var name = matches[2]
+			var name = matches[2]
 
-			//fmt.Printf("Connecting to %s \n", name)
+			fmt.Printf("Disconnecting from %s \n", name)
 
 			exec.Command("bluetoothctl", "disconnect", macAddress).Run()
 		}
@@ -143,8 +150,8 @@ var disconnectCommand = &cobra.Command{
 }
 
 var rootCmd = &cobra.Command{
-	Use:   "bt-cli [args]",
-	Short: "A CLI tool for managing bluetooth connections",
+	Use:   "bt [args]",
+	Short: "A simple tool for managing bluetooth connections",
 	Args:  cobra.ExactArgs(1),
 }
 
